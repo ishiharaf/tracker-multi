@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewdivort" content="width=device-width, initial-scale=1.0">
+	<title>Invoice</title>
+	<style type="text/css">
+		html {height: 100%; font-size: 62.5%;}
+		body {font-family: "Century Gothic"; font-size: 1.7rem; display: flex; flex-flow: column nowrap; max-width: 84.2rem; margin: 3rem auto;}
+		#title {font-size: 4rem;}
+		.header {position: relative}
+		.header > div > p {margin: 0 0 1.5rem 0; color: hsl(0, 0%, 45%)}
+		.header, .day, .total, #number, #date {display: flex; flex-flow: row nowrap;}
+		#log {margin-bottom: 3rem;}
+		#info {margin-bottom: 2.5rem; justify-content: space-between;}
+		.end {text-align: end;}
+		.total {justify-content: flex-end;}
+		.item {flex-basis: 30%;}
+		#info > .item {flex-basis: 48%;}
+		#info > div > div {white-space: pre-wrap; background-color: hsl(0, 0%, 96%); padding: 1.5rem;}
+		.amount {flex-basis: 10%;}
+		.total > div {flex-basis: 20%;}
+		#number > div, #date > div {flex-basis: 50%;}
+		#details {flex-basis: 40%; margin-top: 3.5rem;}
+		.separator {width: 84.2rem; border-bottom: 0.1rem solid hsl(0, 0%, 60%);; position: absolute; top: 3rem;}
+		.divisor {width: 84.2rem; border-bottom: 0.1rem solid hsl(0, 0%, 85%); margin: 2.5rem 0 2.5rem 0;}
+	</style>
+</head>
+<body>
+	<div id="title">Invoice #20211008</div>
+	<div id="subtitle">2021/10/08</div>
+	<div class="divisor"></div>
+	<div id="info" class="header">
+		<div class="item">
+			<p>Sender</p>
+			<div>Scott McClaskey
+362  Waldeck Street
+Kansas, KS 66013
+scott@email.com
+817-397-2837</div>
+		</div>
+		<div class="item">
+			<p>Recipient</p>
+			<div>Eden Law Service LTD
+858 Hillhaven Drive
+Los Angeles, CA 90046</div>
+		</div>
+	</div>
+	<div id="expenses" class="header">
+		<div class="separator"></div>
+		<div class="item"><p>Date</p></div>
+		<div class="item"><p>Hours</p></div>
+		<div class="item"><p>Rate</p></div>
+		<div class="amount end"><p>Amount</p></div>
+	</div>
+	<div id="log">
+		<div class="day">
+			<div class="item">2021/03/01</div>
+			<div class="item">11:00</div>
+			<div class="item">$16</div>
+			<div class="amount end">$176.16</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/02</div>
+			<div class="item">08:02</div>
+			<div class="item">$16</div>
+			<div class="amount end">$128.8</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/03</div>
+			<div class="item">08:41</div>
+			<div class="item">$16</div>
+			<div class="amount end">$139.04</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/04</div>
+			<div class="item">06:58</div>
+			<div class="item">$16</div>
+			<div class="amount end">$111.52</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/05</div>
+			<div class="item">08:02</div>
+			<div class="item">$16</div>
+			<div class="amount end">$128.8</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/08</div>
+			<div class="item">08:01</div>
+			<div class="item">$16</div>
+			<div class="amount end">$128.48</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/09</div>
+			<div class="item">08:01</div>
+			<div class="item">$16</div>
+			<div class="amount end">$128.32</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/10</div>
+			<div class="item">08:00</div>
+			<div class="item">$16</div>
+			<div class="amount end">$128.16</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/11</div>
+			<div class="item">08:00</div>
+			<div class="item">$16</div>
+			<div class="amount end">$128.32</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/12</div>
+			<div class="item">08:00</div>
+			<div class="item">$16</div>
+			<div class="amount end">$128.16</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/15</div>
+			<div class="item">08:03</div>
+			<div class="item">$16</div>
+			<div class="amount end">$128.96</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/16</div>
+			<div class="item">08:00</div>
+			<div class="item">$16</div>
+			<div class="amount end">$128.16</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/17</div>
+			<div class="item">08:01</div>
+			<div class="item">$16</div>
+			<div class="amount end">$128.32</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/18</div>
+			<div class="item">08:06</div>
+			<div class="item">$16</div>
+			<div class="amount end">$129.76</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/19</div>
+			<div class="item">08:01</div>
+			<div class="item">$16</div>
+			<div class="amount end">$128.32</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/22</div>
+			<div class="item">08:01</div>
+			<div class="item">$16</div>
+			<div class="amount end">$128.32</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/23</div>
+			<div class="item">08:01</div>
+			<div class="item">$16</div>
+			<div class="amount end">$128.32</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/24</div>
+			<div class="item">08:00</div>
+			<div class="item">$16</div>
+			<div class="amount end">$128.32</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/25</div>
+			<div class="item">08:04</div>
+			<div class="item">$16</div>
+			<div class="amount end">$129.28</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/26</div>
+			<div class="item">08:01</div>
+			<div class="item">$16</div>
+			<div class="amount end">$128.48</div>
+		</div>
+	</div>
+	<div class="total">
+		<div><b>Total Hours</b></div>
+		<div class="end">163:13</div>
+	</div>
+	<div class="total">
+		<div><b>Total Amount</b></div>
+		<div class="end">$2611.68</div>
+	</div>
+	<div id="additionalExpenses" class="header" style="margin-top: 3rem;">
+		<div class="separator"></div>
+		<div class="item"><p>Date</p></div>
+		<div class="item"><p>Misc. Expenses</p></div>
+		<div class="item"><p></p></div>
+		<div class="amount end"><p>Amount</p></div>
+	</div>
+	<div id="log">
+		<div class="day">
+			<div class="item">2021/03/27</div>
+			<div class="item" style="flex-basis: 60%;">WinRar License</div>
+			<div class="amount end">$29.00</div>
+		</div>
+		<div class="day">
+			<div class="item">2021/03/27</div>
+			<div class="item" style="flex-basis: 60%;">Internet Subsidy</div>
+			<div class="amount end">$99.00</div>
+		</div>
+	</div>
+	<div class="total">
+		<div><b>Subtotal</b></div>
+		<div class="end">$128</div>
+	</div>
+	<div class="total">
+		<div><b>Total</b></div>
+		<div class="end">$2739.68</div>
+	</div></body>
+</html>
