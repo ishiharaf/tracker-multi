@@ -46,6 +46,11 @@ def getHoursDec(time):
 	hours = time.total_seconds() / 60 / 60
 	return f"{hours:05.2f}"
 
+def getHtml():
+	file = "invoice.html"
+	folder = "templates"
+	return path.join(folder, file)
+
 def getInvoice():
 	file = f"{path.splitext(path.basename(args['i']))[0]}.{args['o']}"
 	folder = "invoices"
@@ -108,10 +113,10 @@ def txtExpenses(amount):
 			expenses += item
 			subtotal += expense
 	total = f"{amount + subtotal:.2f}"
-	txt = f"\n\nADDITIONAL EXPENSES\n"
-	txt += f"{expenses}\n"
-	txt += f"  SUBTOTAL = ${subtotal}\n"
-	txt += f"     TOTAL = ${total}"
+	txt = (f"\n\nADDITIONAL EXPENSES\n"
+		   f"{expenses}\n"
+		   f"  SUBTOTAL = ${subtotal}\n"
+		   f"     TOTAL = ${total}")
 	return txt
 
 def txtHours(log):
@@ -136,19 +141,129 @@ def writeTxt(info):
 	rate = args["r"]
 	amount = getAmount(getHoursDec(time), rate)
 	now = datetime.now()
-	txt = f"INVOICE #{getYear(now)}{getMonth(now)}{getDate(now)}\n"
-	txt += f"{getYear(now)}/{getMonth(now)}/{getDate(now)}\n\n"
-	txt += f"SENDER\n"
-	txt += f"{contractor}\n\n"
-	txt += f"RECIPIENT\n"
-	txt += f"{company}\n\n"
-	txt += f"DATE         HOURS   RATE   AMOUNT\n"
-	txt += f"{txtHours(info['log'])}\n"
-	txt += f"     HOURS = {hours}\n"
-	txt += f"    AMOUNT = ${amount}"
+	txt = (f"INVOICE #{getYear(now)}{getMonth(now)}{getDate(now)}\n"
+		   f"{getYear(now)}/{getMonth(now)}/{getDate(now)}\n\n"
+		   f"SENDER\n"
+		   f"{contractor}\n\n"
+		   f"RECIPIENT\n"
+		   f"{company}\n\n"
+		   f"DATE         HOURS   RATE   AMOUNT\n"
+		   f"{txtHours(info['log'])}\n"
+		   f"     HOURS = {hours}\n"
+		   f"    AMOUNT = ${amount}")
 	if args["a"]:
 		txt += txtExpenses(amount)
 	writeFile(invoice, txt)
+
+def htmlExpenses(amount):
+	file = openFile(getExpenses()).splitlines()
+	subtotal = 0
+	html = """
+	<div id="additionalExpenses" class="header" style="margin-top: 3rem;">
+		<div class="separator"></div>
+		<div class="item"><p>Date</p></div>
+		<div class="item"><p>Misc. Expenses</p></div>
+		<div class="item"><p></p></div>
+		<div class="amount end"><p>Amount</p></div>
+	</div>
+	<div id="log">"""
+	for i in range(len(file)):
+		line = file[i]
+		if line[0] != "#":
+			entry = line.split()
+			date = entry[0]
+			expense = float(entry[-1])
+			del entry[-1]
+			item = f"{' '.join(entry[1:])}"
+			div = f"""
+		<div class="day">
+			<div class="item">{date}</div>
+			<div class="item" style="flex-basis: 60%;">{item}</div>
+			<div class="amount end">${expense}</div>
+		</div>"""
+			html += div
+			subtotal += expense
+	total = f"{amount + subtotal:.2f}"
+	html += f"""
+	</div>
+	<div class="total">
+		<div><b>Subtotal</b></div>
+		<div class="end">${subtotal}</div>
+	</div>
+	<div class="total">
+		<div><b>Total</b></div>
+		<div class="end">${total}</div>
+	</div>"""
+	return html
+
+def htmlHours(log):
+	html = ""
+	for i in range(len(log)):
+		line = log[i].split()
+		date = line[0]
+		time = datetime.strptime(line[1], "%H:%M:%S")
+		delta = timedelta(hours=time.hour, minutes=time.minute, seconds=time.second)
+		hours = getHoursDec(delta) if args["d"] else getHours(delta)
+		rate = args["r"]
+		amount = getAmount(getHoursDec(delta), rate)
+		div = f"""
+		<div class="day">
+			<div class="item">${date}</div>
+			<div class="item">${hours}</div>
+			<div class="item">$${rate}</div>
+			<div class="amount end">$${amount}</div>
+		</div>"""
+		html += div
+	return html
+
+def writeHtml(info):
+	invoice = getInvoice()
+	contractor = openFile(getContractor())
+	company = openFile(getCompany())
+	template = openFile(getHtml())
+	position = template.index("<body>") + 6
+	time = info["billable"]
+	hours = getHoursDec(time) if args["d"] else getHours(time)
+	rate = args["r"]
+	amount = getAmount(getHoursDec(time), rate)
+	now = datetime.now()
+	content = f"""
+	<div id="title">Invoice #{getYear(now)}{getMonth(now)}{getDate(now)}</div>
+	<div id="subtitle">{getYear(now)}/{getMonth(now)}/{getDate(now)}</div>
+	<div class="divisor"></div>
+	<div id="info" class="header">
+		<div class="item">
+			<p>Sender</p>
+			<div>{contractor}</div>
+		</div>
+		<div class="item">
+			<p>Recipient</p>
+			<div>{company}</div>
+		</div>
+	</div>
+	<div id="expenses" class="header">
+		<div class="separator"></div>
+		<div class="item"><p>Date</p></div>
+		<div class="item"><p>Hours</p></div>
+		<div class="item"><p>Rate</p></div>
+		<div class="amount end"><p>Amount</p></div>
+	</div>
+	<div id="log">{htmlHours(info["log"])}
+	</div>
+	<div class="total">
+		<div><b>Total Hours</b></div>
+		<div class="end">{hours}</div>
+	</div>
+	<div class="total">
+		<div><b>Total Amount</b></div>
+		<div class="end">${amount}</div>
+	</div>"""
+
+	html = template[0:position] + content
+	if args["a"]:
+		html += htmlExpenses(amount)
+	html += template[:position]
+	writeFile(invoice, html)
 
 def parseLog(filename):
 	lines = openFile(filename).splitlines()
@@ -168,8 +283,8 @@ def parseLog(filename):
 	}
 	if args["o"] == "txt":
 		writeTxt(info)
-	# if args["o"] == "html":
-	# 	writeHtml(info)
+	if args["o"] == "html":
+		writeHtml(info)
 
 def showHelp():
 	print('"-h | --help" displays this message')
