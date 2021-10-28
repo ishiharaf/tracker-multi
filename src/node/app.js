@@ -1,8 +1,16 @@
 const fs = require("fs")
 const path = require("path")
 
-const writeFile = (file, data) => {
-	fs.writeFile(file, data, err => {
+const openFile = (filename) => {
+	try {
+		return fs.readFileSync(filename).toString()
+	} catch (err) {
+		if (err) return console.error(err)
+	}
+}
+
+const writeFile = (filename, data) => {
+	fs.writeFile(filename, data, err => {
 		if (err) return console.error(err)
 	})
 }
@@ -38,9 +46,9 @@ const getHoursDec = (minutes) => {
 	return (minutes / 60).toFixed(2).padStart(5, "0")
 }
 
-const getMinutesDiff = (startDate, endDate) => {
+const getMinutesDiff = (start, end) => {
 	const seconds = 1000, minutes = 60
-	return ((endDate - startDate) / seconds) / minutes
+	return ((end - start) / seconds) / minutes
 }
 
 const getBillableTime = (line) => {
@@ -84,8 +92,8 @@ const getHtml = () => {
 	return path.resolve(folder, file)
 }
 
-const getInvoice = (log) => {
-	const file = `${path.basename(log, path.extname(log))}.${argv.o}`
+const getInvoice = () => {
+	const file = `${path.basename(argv.i, path.extname(argv.i))}.${argv.o}`
 	const folder = "invoices"
 	return path.resolve(folder, file)
 }
@@ -94,20 +102,20 @@ const getName = (date) => {
 	return `${getYear(date)}-${getMonth(date)}`
 }
 
-const getLog = (name) => {
-	const file = name.includes(".log") ? name : `${name}.log`
+const getLog = () => {
+	const file = `${path.basename(argv.i, path.extname(argv.i))}.log`
 	const folder = "hours"
 	return path.resolve(folder, file)
 }
 
 const getExpenses = () => {
-	const file = argv.i.includes(".log") ? argv.i : `${argv.i}.log`
+	const file = `${path.basename(argv.i, path.extname(argv.i))}.log`
 	const folder = "expenses"
 	return path.resolve(folder, file)
 }
 
 const txtExpenses = (amount) => {
-	const log = fs.readFileSync(getExpenses()).toString()
+	const log = openFile(getExpenses())
 	let txt = "", subtotal = 0
 
 	const lines = splitLines(log)
@@ -145,10 +153,10 @@ const txtHours = (log) => {
 	return result
 }
 
-const writeTxt = (file, info) => {
-	const invoice = getInvoice(file)
-	const contractor = fs.readFileSync(getContractor()).toString()
-	const company = fs.readFileSync(getCompany()).toString()
+const writeTxt = (info) => {
+	const invoice = getInvoice()
+	const contractor = openFile(getContractor())
+	const company = openFile(getCompany())
 	const minutes = info.billable
 	const hours = argv.d ? getHoursDec(minutes) : getHours(minutes)
 	const rate = argv.r
@@ -171,7 +179,7 @@ const writeTxt = (file, info) => {
 }
 
 const htmlExpenses = (amount) => {
-	const log = fs.readFileSync(getExpenses()).toString()
+	const log = openFile(getExpenses())
 	let subtotal = 0
 	let html = `
 	<div id="additionalExpenses" class="header" style="margin-top: 3rem;">
@@ -239,11 +247,11 @@ const htmlHours = (log) => {
 	return result
 }
 
-const writeHtml = (file, info) => {
-	const invoice = getInvoice(file)
-	const contractor = fs.readFileSync(getContractor()).toString()
-	const company = fs.readFileSync(getCompany()).toString()
-	const template = fs.readFileSync(getHtml()).toString()
+const writeHtml = (info) => {
+	const invoice = getInvoice()
+	const contractor = openFile(getContractor())
+	const company = openFile(getCompany())
+	const template = openFile(getHtml())
 	const position = template.search("<body>") + 6
 	const minutes = info.billable
 	const hours = argv.d ? getHoursDec(minutes) : getHours(minutes)
@@ -290,29 +298,27 @@ const writeHtml = (file, info) => {
 	writeFile(invoice, html)
 }
 
-const parseLog = (file) => {
-	fs.readFile(file, "utf-8", (err, data) => {
-		if (err) return console.error(`Couldn't read ${file}`)
+const parseLog = (filename) => {
+	const data = openFile(filename)
 
-		let totalBillable = 0, log = []
-		const lines = splitLines(data)
-		for (let i = 0; i < lines.length; i++) {
-			const line = lines[i]
-			if (line.charAt(0) !== "#") {
-				const billable = getBillableTime(line)
-				const date = line.slice(0, 10)
+	let totalBillable = 0, log = []
+	const lines = splitLines(data)
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i]
+		if (line.charAt(0) !== "#") {
+			const billable = getBillableTime(line)
+			const date = line.slice(0, 10)
 
-				totalBillable += billable
-				log.push(`${date} ${billable}`)
-			}
+			totalBillable += billable
+			log.push(`${date} ${billable}`)
 		}
-		const info = {
-			billable: totalBillable, log: log
-		}
+	}
+	const info = {
+		billable: totalBillable, log: log
+	}
 
-		if (argv.o === "txt") writeTxt(file, info)
-		if (argv.o === "html") writeHtml(file, info)
-	})
+	if (argv.o === "txt") writeTxt(info)
+	if (argv.o === "html") writeHtml(info)
 }
 
 const showHelp = () => {
@@ -341,7 +347,7 @@ const args = process.argv.slice(2)
 const argv = parser(args, opts={default: defaults})
 
 if (argv.w) {
-	parseLog(getLog(argv.i))
+	parseLog(getLog())
 }
 if (argv.h) {
 	showHelp()
