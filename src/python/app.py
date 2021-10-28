@@ -52,15 +52,15 @@ def getInvoice(log):
 	return path.join(folder, file)
 
 def getExpenses():
-	file = args["i"] if ".log" in args["i"] else f"{args['i']}.log"
+	file = f"{path.splitext(path.basename(log))[0]}.log"
 	folder = "expenses"
 	return path.join(folder, file)
 
 def getName(date):
 	return f"{getYear(date)}-{getMonth(date)}"
 
-def getLog(name):
-	file = name if ".log" in name else f"{name}.log"
+def getLog():
+	file = f"{path.splitext(path.basename(log))[0]}.log"
 	folder = "hours"
 	return path.join(folder, file)
 
@@ -131,8 +131,8 @@ def txtHours(log):
 		result += f"{date} > {hours} x ${rate} = ${amount}\n"
 	return result
 
-def writeTxt(file, info):
-	invoice = getInvoice(file)
+def writeTxt(info):
+	invoice = getInvoice()
 	contractor = openFile(getContractor())
 	company = openFile(getCompany())
 	time = info["billable"]
@@ -156,8 +156,8 @@ def writeTxt(file, info):
 		txt += txtExpenses(amount)
 	writeFile(invoice, txt)
 
-def parseLog(file):
-	lines = openFile(file).splitlines()
+def parseLog(filename):
+	lines = openFile(filename).splitlines()
 	totalBillable = timedelta(seconds=0)
 	log = []
 	for i in range(len(lines)):
@@ -174,9 +174,9 @@ def parseLog(file):
 		"log": log
 	}
 	if args["o"] == "txt":
-		writeTxt(file, info)
+		writeTxt(info)
 	# if args["o"] == "html":
-	# 	writeHtml(file, info)
+	# 	writeHtml(info)
 
 def showHelp():
 	print('"-h | --help" displays this message')
@@ -245,6 +245,6 @@ def parseArgs():
 
 args = parseArgs()
 if args["w"]:
-	parseLog(getLog(args["i"]))
+	parseLog(getLog())
 if args["h"]:
 	showHelp()
