@@ -46,13 +46,13 @@ def getHoursDec(time):
 	hours = time.total_seconds() / 60 / 60
 	return f"{hours:05.2f}"
 
-def getInvoice(log):
-	file = f"{path.splitext(path.basename(log))[0]}.{args['o']}"
+def getInvoice():
+	file = f"{path.splitext(path.basename(args['i']))[0]}.{args['o']}"
 	folder = "invoices"
 	return path.join(folder, file)
 
 def getExpenses():
-	file = f"{path.splitext(path.basename(log))[0]}.log"
+	file = f"{path.splitext(path.basename(args['i']))[0]}.log"
 	folder = "expenses"
 	return path.join(folder, file)
 
@@ -60,7 +60,7 @@ def getName(date):
 	return f"{getYear(date)}-{getMonth(date)}"
 
 def getLog():
-	file = f"{path.splitext(path.basename(log))[0]}.log"
+	file = f"{path.splitext(path.basename(args['i']))[0]}.log"
 	folder = "hours"
 	return path.join(folder, file)
 
@@ -72,15 +72,12 @@ def getBillableTime(line):
 	date = entry[0]
 	hours = entry[1:]
 	billable = timedelta(seconds=0)
-
 	for i in range(0, len(hours), 2):
 		start = datetime.strptime(f"{date} {hours[i]}", "%Y/%m/%d %H:%M:%S")
 		end = datetime.strptime(f"{date} {hours[i + 1]}", "%Y/%m/%d %H:%M:%S")
-
 		if end < start:
 			end = end + timedelta(days=1)
 		billable += getMinutesDiff(start, end)
-
 	return billable
 
 def getAmount(time, rate):
@@ -110,7 +107,6 @@ def txtExpenses(amount):
 			item = f"{' '.join(entry[1:])} = {expense}\n"
 			expenses += item
 			subtotal += expense
-
 	total = f"{amount + subtotal:.2f}"
 	txt = f"\n\nADDITIONAL EXPENSES\n"
 	txt += f"{expenses}\n"
@@ -140,7 +136,6 @@ def writeTxt(info):
 	rate = args["r"]
 	amount = getAmount(getHoursDec(time), rate)
 	now = datetime.now()
-
 	txt = f"INVOICE #{getYear(now)}{getMonth(now)}{getDate(now)}\n"
 	txt += f"{getYear(now)}/{getMonth(now)}/{getDate(now)}\n\n"
 	txt += f"SENDER\n"
@@ -151,7 +146,6 @@ def writeTxt(info):
 	txt += f"{txtHours(info['log'])}\n"
 	txt += f"     HOURS = {hours}\n"
 	txt += f"    AMOUNT = ${amount}"
-
 	if args["a"]:
 		txt += txtExpenses(amount)
 	writeFile(invoice, txt)
@@ -168,7 +162,6 @@ def parseLog(filename):
 
 			totalBillable += billable
 			log.append(f"{date} {billable}")
-
 	info = {
 		"billable": totalBillable,
 		"log": log
@@ -199,7 +192,6 @@ def parseArgs():
 		"a": False,
 		"r": 16
 	}
-
 	try:
 		opts, args = getopt(
 			sys.argv[1:],
@@ -215,7 +207,6 @@ def parseArgs():
 				"rate="
 			]
 		)
-
 		for opt, arg in opts:
 			if opt in ["-w", "--write"]:
 				arguments["w"] = True
@@ -235,12 +226,10 @@ def parseArgs():
 				arguments["r"] = arg
 			else:
 				assert False, "Invalid option"
-
 	except GetoptError as err:
 		print(f"{err}\n")
 		showHelp()
 		sys.exit(2)
-
 	return arguments
 
 args = parseArgs()
