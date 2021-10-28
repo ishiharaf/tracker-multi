@@ -305,31 +305,27 @@ const writeHtml = (info: LogInfo): void => {
 	writeFile(invoice, html)
 }
 
-const parseLog = (file: string): void => {
-	try {
-		const data = openFile(file)
+const parseLog = (filename: string): void => {
+	const data = openFile(filename)
 
-		let totalBillable = 0, log = []
-		const lines = splitLines(data)
-		for (let i = 0; i < lines.length; i++) {
-			const line = lines[i]
-			if (line.charAt(0) !== "#") {
-				const billable = getBillableTime(line)
-				const date = line.slice(0, 10)
+	let totalBillable = 0, log = []
+	const lines = splitLines(data)
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i]
+		if (line.charAt(0) !== "#") {
+			const billable = getBillableTime(line)
+			const date = line.slice(0, 10)
 
-				totalBillable += billable
-				log.push(`${date} ${billable}`)
-			}
+			totalBillable += billable
+			log.push(`${date} ${billable}`)
 		}
-		const info = {
-			billable: totalBillable, log: log
-		}
-
-		if (args.o === "txt") writeTxt(info)
-		if (args.o === "html") writeHtml(info)
-	} catch (err) {
-		if (err) return console.error(`Couldn't read ${file}`)
 	}
+	const info = {
+		billable: totalBillable, log: log
+	}
+
+	if (args.o === "txt") writeTxt(info)
+	if (args.o === "html") writeHtml(info)
 }
 
 const showHelp = (): void => {
