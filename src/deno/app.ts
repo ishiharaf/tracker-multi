@@ -2,55 +2,63 @@ import { parse } from "https://deno.land/std@0.110.0/flags/mod.ts"
 import * as path from "https://deno.land/std@0.110.0/path/mod.ts"
 
 interface LogInfo {
-	billable:number
-	log:string[]
+	billable: number
+	log: string[]
 }
 
-const writeFile = (file:string, data:string):void => {
+const openFile = (filename: string): any => {
 	try {
-		Deno.writeTextFileSync(file, data)
+		return Deno.readTextFileSync(filename)
 	} catch(err) {
 		if (err) return console.error(err)
 	}
 }
 
-const splitLines = (lines:string):string[] => {
+const writeFile = (filename: string, data: string): void => {
+	try {
+		Deno.writeTextFileSync(filename, data)
+	} catch(err) {
+		if (err) return console.error(err)
+	}
+}
+
+const splitLines = (lines: string): string[] => {
 	return lines.split(/\r\n|\n\r|\n|\r/)
 }
 
-const filterLine = (line:string):string[] => {
+const filterLine = (line: string): string[] => {
 	const filter = ["~", "-"]
-	const arr = line.split(" ")
-	return arr.filter(el => !filter.includes(el))
+	const array = line.split(" ")
+	return array.filter(el => !filter.includes(el))
 }
 
-const getYear = (date:Date):string => {
+const getYear = (date: Date): string => {
 	return date.getFullYear().toString()
 }
-const getMonth = (date:Date):string => {
+const getMonth = (date: Date): string => {
 	return (date.getMonth() + 1).toString().padStart(2, "0")
 }
 
-const getDate = (date:Date):string => {
+const getDate = (date: Date): string => {
 	return date.getDate().toString().padStart(2, "0")
 }
 
-const getHours = (minutes:number):string => {
+const getHours = (minutes: number): string => {
 	const hour = Math.floor(minutes / 60).toString().padStart(2, "0")
 	const minute = Math.floor(minutes % 60).toString().padStart(2, "0")
 	return `${hour}:${minute}`
 }
 
-const getHoursDec = (minutes:number):string => {
+const getHoursDec = (minutes: number): string => {
 	return (minutes / 60).toFixed(2).padStart(5, "0")
 }
 
-const getMinutesDiff = (start:Date, end:Date):number => {
+const getMinutesDiff = (start: Date, end: Date): number => {
 	const seconds = 1000, minutes = 60
 	return ((end.getTime() - start.getTime()) / seconds) / minutes
 }
 
-const getBillableTime = (line:string):number => {
+const getBillableTime = (line: string): number => {
 	const entry = filterLine(line)
 	const date = entry[0]
 	entry.shift()
@@ -68,54 +76,53 @@ const getBillableTime = (line:string):number => {
 	return billable
 }
 
-const getAmount = (minutes:number, rate:number):number => {
+const getAmount = (minutes: number, rate: number): number => {
 	const hours = Number((minutes / 60).toFixed(2))
 	return Number((hours * rate).toFixed(2))
 }
 
-const getCompany = ():string => {
+const getCompany = (): string => {
 	const file = `${args.c}.info`
 	const folder = "info"
 	return path.join(folder, file)
 }
 
-const getContractor = ():string => {
+const getContractor = (): string => {
 	const file = "contractor.info"
 	const folder = "info"
 	return path.join(folder, file)
 }
 
-const getHtml = ():string => {
+const getHtml = (): string => {
 	const file = "invoice.html"
 	const folder = "templates"
 	return path.join(folder, file)
 }
 
-const getInvoice = (log:string):string => {
-	const file = `${path.basename(log, path.extname(log))}.${args.o}`
-	console.log(path.basename(log, path.extname(log)))
+const getInvoice = (): string => {
+	const file = `${path.basename(args.i, path.extname(args.i))}.${args.o}`
 	const folder = "invoices"
 	return path.join(folder, file)
 }
 
-const getName = (date:Date):string => {
+const getName = (date: Date): string => {
 	return `${getYear(date)}-${getMonth(date)}`
 }
 
-const getLog = (name:string):string => {
-	const file = name.includes(".log") ? name : `${name}.log`
+const getLog = (): string => {
+	const file = `${path.basename(args.i, path.extname(args.i))}.log`
 	const folder = "hours"
 	return path.join(folder, file)
 }
 
-const getExpenses = ():string => {
-	const file = args.i.includes(".log") ? args.i : `${args.i}.log`
+const getExpenses = (): string => {
+	const file = `${path.basename(args.i, path.extname(args.i))}.log`
 	const folder = "expenses"
 	return path.join(folder, file)
 }
 
-const txtExpenses = (amount:number):string => {
-	const log = Deno.readTextFileSync(getExpenses())
+const txtExpenses = (amount: number): string => {
+	const log = openFile(getExpenses())
 	let txt = "", subtotal = 0
 
 	const lines = splitLines(log)
@@ -138,7 +145,7 @@ const txtExpenses = (amount:number):string => {
 		   `     TOTAL = $${total}`
 }
 
-const txtHours = (log:string[]):string => {
+const txtHours = (log: string[]): string => {
 	let result = ""
 	for (let i = 0; i < log.length; i++) {
 		const line = log[i].split(" ")
@@ -153,10 +160,10 @@ const txtHours = (log:string[]):string => {
 	return result
 }
 
-const writeTxt = (file:string, info:LogInfo):void => {
-	const invoice = getInvoice(file)
-	const contractor = Deno.readTextFileSync(getContractor())
-	const company = Deno.readTextFileSync(getCompany())
+const writeTxt = (info: LogInfo): void => {
+	const invoice = getInvoice()
+	const contractor = openFile(getContractor())
+	const company = openFile(getCompany())
 	const minutes = info.billable
 	const hours = args.d ? getHoursDec(minutes) : getHours(minutes)
 	const rate = args.r
@@ -178,8 +185,8 @@ const writeTxt = (file:string, info:LogInfo):void => {
 	writeFile(invoice, txt)
 }
 
-const htmlExpenses = (amount:number):string => {
-	const log = Deno.readTextFileSync(getExpenses())
+const htmlExpenses = (amount: number): string => {
+	const log = openFile(getExpenses())
 	let subtotal = 0
 	let html = `
 	<div id="additionalExpenses" class="header" style="margin-top: 3rem;">
@@ -226,7 +233,7 @@ const htmlExpenses = (amount:number):string => {
 	return html
 }
 
-const htmlHours = (log:string[]):string => {
+const htmlHours = (log: string[]): string => {
 	let result = ""
 	for (let i = 0; i < log.length; i++) {
 		const line = log[i].split(" ")
@@ -247,11 +254,11 @@ const htmlHours = (log:string[]):string => {
 	return result
 }
 
-const writeHtml = (file:string, info:LogInfo):void => {
-	const invoice = getInvoice(file)
-	const contractor = Deno.readTextFileSync(getContractor())
-	const company = Deno.readTextFileSync(getCompany())
-	const template = Deno.readTextFileSync(getHtml())
+const writeHtml = (info: LogInfo): void => {
+	const invoice = getInvoice()
+	const contractor = openFile(getContractor())
+	const company = openFile(getCompany())
+	const template = openFile(getHtml())
 	const position = template.search("<body>") + 6
 	const minutes = info.billable
 	const hours = args.d ? getHoursDec(minutes) : getHours(minutes)
@@ -298,9 +305,9 @@ const writeHtml = (file:string, info:LogInfo):void => {
 	writeFile(invoice, html)
 }
 
-const parseLog = (file:string):void => {
+const parseLog = (file: string): void => {
 	try {
-		const data = Deno.readTextFileSync(file)
+		const data = openFile(file)
 
 		let totalBillable = 0, log = []
 		const lines = splitLines(data)
@@ -318,14 +325,14 @@ const parseLog = (file:string):void => {
 			billable: totalBillable, log: log
 		}
 
-		if (args.o === "txt") writeTxt(file, info)
-		if (args.o === "html") writeHtml(file, info)
+		if (args.o === "txt") writeTxt(info)
+		if (args.o === "html") writeHtml(info)
 	} catch (err) {
 		if (err) return console.error(`Couldn't read ${file}`)
 	}
 }
 
-const showHelp = () => {
+const showHelp = (): void => {
 	console.info('"-h | --help" displays this message')
 	console.info('"-w | --write" writes an invoice.')
 	console.info('"-a | --add" includes additional expenses on the invoice')
@@ -363,7 +370,7 @@ const args = parse(Deno.args, {
 })
 
 if (args.w) {
-	parseLog(getLog(args.i))
+	parseLog(getLog())
 }
 if (args.h) {
 	showHelp()
