@@ -10,6 +10,13 @@ Minimalistic time tracker. It calculates the number of hours worked in a day and
 - [License](#license)
 
 ## Setup
+### Python 3.10.0:b494f59
+
+To run the app:
+```bash
+$ python app.py
+```
+
 ### Node 14.12.0
 
 To run the app:
