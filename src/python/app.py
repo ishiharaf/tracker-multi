@@ -69,7 +69,7 @@ def getLog():
 	folder = "hours"
 	return path.join(folder, file)
 
-def getMinutesDiff(start, end):
+def getTimeDiff(start, end):
 	return end - start
 
 def getBillableTime(line):
@@ -82,7 +82,7 @@ def getBillableTime(line):
 		end = datetime.strptime(f"{date} {hours[i + 1]}", "%Y/%m/%d %H:%M:%S")
 		if end < start:
 			end = end + timedelta(days=1)
-		billable += getMinutesDiff(start, end)
+		billable += getTimeDiff(start, end)
 	return billable
 
 def getAmount(time, rate):
