@@ -76,9 +76,9 @@ const getBillableTime = (line: string): number => {
 	return billable
 }
 
-const getAmount = (minutes: number, rate: number): number => {
+const getAmount = (minutes: number, rate: number): string => {
 	const hours = Number((minutes / 60).toFixed(2))
-	return Number((hours * rate).toFixed(2))
+	return (hours * rate).toFixed(2)
 }
 
 const getCompany = (): string => {
@@ -130,19 +130,19 @@ const txtExpenses = (amount: number): string => {
 		const line = lines[i]
 		if (line.charAt(0) !== "#") {
 			const str = line.split(" ")
-			const expense = str[str.length - 1]
+			const expense = Number(str[str.length - 1])
 			str.pop(), str.shift()
-			const item = `${str.join(" ")} = $${expense}\n`
+			const item = `${str.join(" ")} = $${expense.toFixed(2)}\n`
 
-			txt += item, subtotal += Number(expense)
+			txt += item, subtotal += expense
 		}
 	}
 
-	const total = (amount + subtotal).toFixed(2)
+	const total = amount + subtotal
 	return `\n\nADDITIONAL EXPENSES\n` +
 		   `${txt}\n` +
-		   `  SUBTOTAL = $${subtotal}\n` +
-		   `     TOTAL = $${total}`
+		   `  SUBTOTAL = $${subtotal.toFixed(2)}\n` +
+		   `     TOTAL = $${total.toFixed(2)}`
 }
 
 const txtHours = (log: string[]): string => {
@@ -181,7 +181,7 @@ const writeTxt = (info: LogInfo): void => {
 			  `     HOURS = ${hours}\n` +
 			  `    AMOUNT = $${amount}`
 
-	if (args.a) txt += txtExpenses(amount)
+	if (args.a) txt += txtExpenses(Number(amount))
 	writeFile(invoice, txt)
 }
 
@@ -204,30 +204,30 @@ const htmlExpenses = (amount: number): string => {
 		if (line.charAt(0) !== "#") {
 			const str = line.split(" ")
 			const date = str[0]
-			const expense = str[str.length - 1]
+			const expense = Number(str[str.length - 1])
 			str.pop(), str.shift()
 			const item = str.join(" ")
 			const div = `
 		<div class="day">
 			<div class="item">${date}</div>
 			<div class="item" style="flex-basis: 60%;">${item}</div>
-			<div class="amount end">$${expense}</div>
+			<div class="amount end">$${expense.toFixed(2)}</div>
 		</div>`
 
-			html += div, subtotal += Number(expense)
+			html += div, subtotal += expense
 		}
 	}
 
-	const total = (amount + subtotal).toFixed(2)
+	const total = amount + subtotal
 	html += `
 	</div>
 	<div class="total">
 		<div><b>Subtotal</b></div>
-		<div class="end">$${subtotal}</div>
+		<div class="end">$${subtotal.toFixed(2)}</div>
 	</div>
 	<div class="total">
 		<div><b>Total</b></div>
-		<div class="end">$${total}</div>
+		<div class="end">$${total.toFixed(2)}</div>
 	</div>`
 
 	return html
@@ -299,7 +299,7 @@ const writeHtml = (info: LogInfo): void => {
 	</div>`
 
 	let html = template.slice(0, position) + content
-	if (args.a) html += htmlExpenses(amount)
+	if (args.a) html += htmlExpenses(Number(amount))
 	html += template.slice(position)
 
 	writeFile(invoice, html)
