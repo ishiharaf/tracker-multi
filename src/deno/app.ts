@@ -93,12 +93,6 @@ const getContractor = (): string => {
 	return path.join(folder, file)
 }
 
-const getHtml = (): string => {
-	const file = "invoice.html"
-	const folder = "templates"
-	return path.join(folder, file)
-}
-
 const getInvoice = (): string => {
 	const file = `${path.basename(args.i, path.extname(args.i))}.${args.o}`
 	const folder = "invoices"
@@ -185,126 +179,6 @@ const writeTxt = (info: LogInfo): void => {
 	writeFile(invoice, txt)
 }
 
-const htmlExpenses = (amount: number): string => {
-	const log = openFile(getExpenses())
-	let subtotal = 0
-	let html = `
-	<div id="additionalExpenses" class="header" style="margin-top: 3rem;">
-		<div class="separator"></div>
-		<div class="item"><p>Date</p></div>
-		<div class="item"><p>Misc. Expenses</p></div>
-		<div class="item"><p></p></div>
-		<div class="amount end"><p>Amount</p></div>
-	</div>
-	<div id="log">`
-
-	const lines = splitLines(log)
-	for (let i = 0; i < lines.length; i++) {
-		const line = lines[i]
-		if (line.charAt(0) !== "#") {
-			const str = line.split(" ")
-			const date = str[0]
-			const expense = Number(str[str.length - 1])
-			str.pop(), str.shift()
-			const item = str.join(" ")
-			const div = `
-		<div class="day">
-			<div class="item">${date}</div>
-			<div class="item" style="flex-basis: 60%;">${item}</div>
-			<div class="amount end">$${expense.toFixed(2)}</div>
-		</div>`
-
-			html += div, subtotal += expense
-		}
-	}
-
-	const total = amount + subtotal
-	html += `
-	</div>
-	<div class="total">
-		<div><b>Subtotal</b></div>
-		<div class="end">$${subtotal.toFixed(2)}</div>
-	</div>
-	<div class="total">
-		<div><b>Total</b></div>
-		<div class="end">$${total.toFixed(2)}</div>
-	</div>`
-
-	return html
-}
-
-const htmlHours = (log: string[]): string => {
-	let result = ""
-	for (let i = 0; i < log.length; i++) {
-		const line = log[i].split(" ")
-		const date = line[0]
-		const minutes = Number(line[1])
-		const hours = args.d ? getHoursDec(minutes) : getHours(minutes)
-		const rate = args.r
-		const amount = getAmount(minutes, rate)
-		const div = `
-		<div class="day">
-			<div class="item">${date}</div>
-			<div class="item">${hours}</div>
-			<div class="item">$${rate}</div>
-			<div class="amount end">$${amount}</div>
-		</div>`
-		result += div
-	}
-	return result
-}
-
-const writeHtml = (info: LogInfo): void => {
-	const invoice = getInvoice()
-	const contractor = openFile(getContractor())
-	const company = openFile(getCompany())
-	const template = openFile(getHtml())
-	const position = template.search("<body>") + 6
-	const minutes = info.billable
-	const hours = args.d ? getHoursDec(minutes) : getHours(minutes)
-	const rate = args.r
-	const amount = getAmount(minutes, rate)
-
-	const now = new Date()
-	const content = `
-	<div id="title">Invoice #${getYear(now)}${getMonth(now)}${getDate(now)}</div>
-	<div id="subtitle">${getYear(now)}/${getMonth(now)}/${getDate(now)}</div>
-	<div class="divisor"></div>
-	<div id="info" class="header">
-		<div class="item">
-			<p>Sender</p>
-			<div>${contractor}</div>
-		</div>
-		<div class="item">
-			<p>Recipient</p>
-			<div>${company}</div>
-		</div>
-	</div>
-	<div id="expenses" class="header">
-		<div class="separator"></div>
-		<div class="item"><p>Date</p></div>
-		<div class="item"><p>Hours</p></div>
-		<div class="item"><p>Rate</p></div>
-		<div class="amount end"><p>Amount</p></div>
-	</div>
-	<div id="log">${htmlHours(info.log)}
-	</div>
-	<div class="total">
-		<div><b>Total Hours</b></div>
-		<div class="end">${hours}</div>
-	</div>
-	<div class="total">
-		<div><b>Total Amount</b></div>
-		<div class="end">$${amount}</div>
-	</div>`
-
-	let html = template.slice(0, position) + content
-	if (args.a) html += htmlExpenses(Number(amount))
-	html += template.slice(position)
-
-	writeFile(invoice, html)
-}
-
 const parseLog = (filename: string): void => {
 	const data = openFile(filename)
 
@@ -325,7 +199,6 @@ const parseLog = (filename: string): void => {
 	}
 
 	if (args.o === "txt") writeTxt(info)
-	if (args.o === "html") writeHtml(info)
 }
 
 const showHelp = (): void => {
