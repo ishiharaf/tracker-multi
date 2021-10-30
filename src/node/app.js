@@ -192,7 +192,6 @@ const parseLog = (filename) => {
 	}
 
 	if (argv.o === "txt") writeTxt(info)
-	if (argv.o === "html") writeHtml(info)
 }
 
 const showHelp = () => {
