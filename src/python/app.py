@@ -87,7 +87,7 @@ def getBillableTime(line):
 
 def getAmount(time, rate):
 	amount = float(time) * rate
-	return float(f"{amount:.2f}")
+	return f"{amount:.2f}"
 
 def getCompany():
 	file = f"{args['c']}.info"
@@ -109,14 +109,14 @@ def txtExpenses(amount):
 			entry = line.split()
 			expense = float(entry[-1])
 			del entry[-1]
-			item = f"{' '.join(entry[1:])} = {expense}\n"
+			item = f"{' '.join(entry[1:])} = {expense:.2f}\n"
 			expenses += item
 			subtotal += expense
-	total = f"{amount + subtotal:.2f}"
+	total = amount + subtotal
 	txt = (f"\n\nADDITIONAL EXPENSES\n"
 		   f"{expenses}\n"
-		   f"  SUBTOTAL = ${subtotal}\n"
-		   f"     TOTAL = ${total}")
+		   f"  SUBTOTAL = ${subtotal:.2f}\n"
+		   f"     TOTAL = ${total:.2f}")
 	return txt
 
 def txtHours(log):
@@ -152,7 +152,7 @@ def writeTxt(info):
 		   f"     HOURS = {hours}\n"
 		   f"    AMOUNT = ${amount}")
 	if args["a"]:
-		txt += txtExpenses(amount)
+		txt += txtExpenses(float(amount))
 	writeFile(invoice, txt)
 
 def htmlExpenses(amount):
@@ -179,20 +179,20 @@ def htmlExpenses(amount):
 		<div class="day">
 			<div class="item">{date}</div>
 			<div class="item" style="flex-basis: 60%;">{item}</div>
-			<div class="amount end">${expense}</div>
+			<div class="amount end">${expense:.2f}</div>
 		</div>"""
 			html += div
 			subtotal += expense
-	total = f"{amount + subtotal:.2f}"
+	total = amount + subtotal
 	html += f"""
 	</div>
 	<div class="total">
 		<div><b>Subtotal</b></div>
-		<div class="end">${subtotal}</div>
+		<div class="end">${subtotal:.2f}</div>
 	</div>
 	<div class="total">
 		<div><b>Total</b></div>
-		<div class="end">${total}</div>
+		<div class="end">${total:.2f}</div>
 	</div>"""
 	return html
 
@@ -261,7 +261,7 @@ def writeHtml(info):
 
 	html = template[0:position] + content
 	if args["a"]:
-		html += htmlExpenses(amount)
+		html += htmlExpenses(float(amount))
 	html += template[:position]
 	writeFile(invoice, html)
 
