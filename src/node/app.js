@@ -86,12 +86,6 @@ const getContractor = () => {
 	return path.resolve(folder, file)
 }
 
-const getHtml = () => {
-	const file = "invoice.html"
-	const folder = "templates"
-	return path.resolve(folder, file)
-}
-
 const getInvoice = () => {
 	const file = `${path.basename(argv.i, path.extname(argv.i))}.${argv.o}`
 	const folder = "invoices"
@@ -123,19 +117,19 @@ const txtExpenses = (amount) => {
 		const line = lines[i]
 		if (line.charAt(0) !== "#") {
 			const str = line.split(" ")
-			const expense = str[str.length - 1]
+			const expense = Number(str[str.length - 1])
 			str.pop(), str.shift()
 			const item = `${str.join(" ")} = $${expense}\n`
 
-			txt += item, subtotal += Number(expense)
+			txt += item, subtotal += expense
 		}
 	}
 
-	const total = (Number(amount) + subtotal).toFixed(2)
+	const total = amount + subtotal
 	return `\n\nADDITIONAL EXPENSES\n` +
 		   `${txt}\n` +
-		   `  SUBTOTAL = $${subtotal}\n` +
-		   `     TOTAL = $${total}`
+		   `  SUBTOTAL = $${subtotal.toFixed(2)}\n` +
+		   `     TOTAL = $${total.toFixed(2)}`
 }
 
 const txtHours = (log) => {
@@ -174,128 +168,8 @@ const writeTxt = (info) => {
 			  `     HOURS = ${hours}\n` +
 			  `    AMOUNT = $${amount}`
 
-	if (argv.a) txt += txtExpenses(amount)
+	if (argv.a) txt += txtExpenses(Number(amount))
 	writeFile(invoice, txt)
-}
-
-const htmlExpenses = (amount) => {
-	const log = openFile(getExpenses())
-	let subtotal = 0
-	let html = `
-	<div id="additionalExpenses" class="header" style="margin-top: 3rem;">
-		<div class="separator"></div>
-		<div class="item"><p>Date</p></div>
-		<div class="item"><p>Misc. Expenses</p></div>
-		<div class="item"><p></p></div>
-		<div class="amount end"><p>Amount</p></div>
-	</div>
-	<div id="log">`
-
-	const lines = splitLines(log)
-	for (let i = 0; i < lines.length; i++) {
-		const line = lines[i]
-		if (line.charAt(0) !== "#") {
-			const str = line.split(" ")
-			const date = str[0]
-			const expense = str[str.length - 1]
-			str.pop(), str.shift()
-			const item = str.join(" ")
-			const div = `
-		<div class="day">
-			<div class="item">${date}</div>
-			<div class="item" style="flex-basis: 60%;">${item}</div>
-			<div class="amount end">$${expense}</div>
-		</div>`
-
-			html += div, subtotal += Number(expense)
-		}
-	}
-
-	const total = (Number(amount) + subtotal).toFixed(2)
-	html += `
-	</div>
-	<div class="total">
-		<div><b>Subtotal</b></div>
-		<div class="end">$${subtotal}</div>
-	</div>
-	<div class="total">
-		<div><b>Total</b></div>
-		<div class="end">$${total}</div>
-	</div>`
-
-	return html
-}
-
-const htmlHours = (log) => {
-	let result = ""
-	for (let i = 0; i < log.length; i++) {
-		const line = log[i].split(" ")
-		const date = line[0]
-		const minutes = line[1]
-		const hours = argv.d ? getHoursDec(minutes) : getHours(minutes)
-		const rate = argv.r
-		const amount = getAmount(minutes, rate)
-		const div = `
-		<div class="day">
-			<div class="item">${date}</div>
-			<div class="item">${hours}</div>
-			<div class="item">$${rate}</div>
-			<div class="amount end">$${amount}</div>
-		</div>`
-		result += div
-	}
-	return result
-}
-
-const writeHtml = (info) => {
-	const invoice = getInvoice()
-	const contractor = openFile(getContractor())
-	const company = openFile(getCompany())
-	const template = openFile(getHtml())
-	const position = template.search("<body>") + 6
-	const minutes = info.billable
-	const hours = argv.d ? getHoursDec(minutes) : getHours(minutes)
-	const rate = argv.r
-	const amount = getAmount(minutes, rate)
-
-	const now = new Date()
-	const content = `
-	<div id="title">Invoice #${getYear(now)}${getMonth(now)}${getDate(now)}</div>
-	<div id="subtitle">${getYear(now)}/${getMonth(now)}/${getDate(now)}</div>
-	<div class="divisor"></div>
-	<div id="info" class="header">
-		<div class="item">
-			<p>Sender</p>
-			<div>${contractor}</div>
-		</div>
-		<div class="item">
-			<p>Recipient</p>
-			<div>${company}</div>
-		</div>
-	</div>
-	<div id="expenses" class="header">
-		<div class="separator"></div>
-		<div class="item"><p>Date</p></div>
-		<div class="item"><p>Hours</p></div>
-		<div class="item"><p>Rate</p></div>
-		<div class="amount end"><p>Amount</p></div>
-	</div>
-	<div id="log">${htmlHours(info.log)}
-	</div>
-	<div class="total">
-		<div><b>Total Hours</b></div>
-		<div class="end">${hours}</div>
-	</div>
-	<div class="total">
-		<div><b>Total Amount</b></div>
-		<div class="end">$${amount}</div>
-	</div>`
-
-	let html = template.slice(0, position) + content
-	if (argv.a) html += htmlExpenses(amount)
-	html += template.slice(position)
-
-	writeFile(invoice, html)
 }
 
 const parseLog = (filename) => {
