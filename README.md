@@ -51,6 +51,15 @@ x86_64-apple-darwin
 aarch64-apple-darwin
 ```
 
+### PowerShell 5.1 Build 19041 Rev. 1237
+
+To run the app:
+```powershell
+> ./App.ps1
+```
+
+Only long options are available for PowerShell. They are capitalized with a single dash. e.g.: `-Write` instead of `--write`. Since `$Input` is an internal variable on PowerShell, `--input` became `-File`. Use `-Help` for the full options.
+
 ## Options
 - `-h | --help` displays a help message.
 - `-w | --write` includes additional expenses on the invoice.
@@ -61,7 +70,7 @@ aarch64-apple-darwin
 - `-c | --company` changes the billed client. Pass the name without the `.info`. The default is `company`.
 - `-r | --rate` changes the hourly rate. The default is `16`.
 
-Long options are not available for every language. Currently available for `deno`.
+Long options are not available for every language. Currently available for `deno` and `python`.
 
 ## License
 - See [LICENSE](LICENSE.md) file.
