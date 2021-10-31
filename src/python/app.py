@@ -28,15 +28,6 @@ def filterLine(line):
 	match = ["~", "-"]
 	return list(filter(lambda x: x not in match, line.split()))
 
-def getYear(date):
-	return date.strftime("%Y")
-
-def getMonth(date):
-	return date.strftime("%m")
-
-def getDate(date):
-	return date.strftime("%d")
-
 def getHours(time):
 	hours = floor(time.total_seconds() / 60 / 60)
 	minutes = floor((time.total_seconds() / 60) % 60)
@@ -55,9 +46,6 @@ def getExpenses():
 	file = f"{path.splitext(path.basename(args['i']))[0]}.log"
 	folder = "expenses"
 	return path.join(folder, file)
-
-def getName(date):
-	return f"{getYear(date)}-{getMonth(date)}"
 
 def getLog():
 	file = f"{path.splitext(path.basename(args['i']))[0]}.log"
@@ -136,8 +124,8 @@ def writeTxt(info):
 	rate = args["r"]
 	amount = getAmount(getHoursDec(time), rate)
 	now = datetime.now()
-	txt = (f"INVOICE #{getYear(now)}{getMonth(now)}{getDate(now)}\n"
-		   f"{getYear(now)}/{getMonth(now)}/{getDate(now)}\n\n"
+	txt = (f"INVOICE #{now.strftime('%Y%m%d')}\n"
+		   f"{now.strftime('%Y/%m/%d')}\n\n"
 		   f"SENDER\n"
 		   f"{contractor}\n\n"
 		   f"RECIPIENT\n"
@@ -180,9 +168,10 @@ def showHelp():
 	print('"-r | --rate" changes the hourly rate. Default is "16"')
 
 def parseArgs():
+	now = datetime.now()
 	arguments = {
 		"w": False,
-		"i": getName(datetime.now()),
+		"i": now.strftime('%Y-%m'),
 		"o": "txt",
 		"c": "company",
 		"h": False,
