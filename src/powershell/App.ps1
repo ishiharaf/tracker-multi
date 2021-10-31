@@ -63,7 +63,7 @@ Function Filter-Line ([string] $Line) {
 	Return @($Array) | Select-String -Pattern $Filter -simplematch -notmatch
 }
 
-Function Split-Lines ($Lines) {
+Function Split-Lines ([array]$Lines) {
 	Return $Lines.Split([Environment]::NewLine, [StringSplitOptions]::RemoveEmptyEntries)
 }
 
@@ -117,7 +117,7 @@ Function Get-TextExpenses ([int] $Amount) {
 	Return $Result
 }
 
-Function Get-TextHours ($Log) {
+Function Get-TextHours ([array] $Log) {
 	$Result = ""
 	ForEach ($Entry in $Log) {
 		$Line = $Entry.Split()
@@ -131,7 +131,7 @@ Function Get-TextHours ($Log) {
 	Return $Result
 }
 
-Function Write-Text ($Info) {
+Function Write-Text ([hashtable]$Info) {
 	$Invoice = Get-Invoice
 	$ContractorInfo = Open-File (Get-Contractor)
 	$CompanyInfo = Open-File (Get-Company)
@@ -148,7 +148,7 @@ Function Write-Text ($Info) {
 	$Text += "DATE         HOURS   RATE   AMOUNT{0}" -f $NewLine
 	$Text += "$(Get-TextHours $Info.Log){0}" -f $NewLine
 	$Text += "     HOURS = $($Hours){0}" -f $NewLine
-	$Text += "    AMOUNT = $($Amount)"
+	$Text += "    AMOUNT = `$$($Amount)"
 
 	If ($Add) {
 		$Text += Get-TextExpenses $Amount
