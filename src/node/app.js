@@ -119,7 +119,7 @@ const txtExpenses = (amount) => {
 			const str = line.split(" ")
 			const expense = Number(str[str.length - 1])
 			str.pop(), str.shift()
-			const item = `${str.join(" ")} = $${expense}\n`
+			const item = `${str.join(" ")} = $${expense.toFixed(2)}\n`
 
 			txt += item, subtotal += expense
 		}
